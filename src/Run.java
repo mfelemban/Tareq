@@ -1,43 +1,90 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.math.BigInteger;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.util.ArrayList;
+
+import sun.misc.BASE64Encoder;
 
 
 public class Run {
-	
-	public static void main(String[] args){
+
+	public static void main(String[] args) throws Exception{
 		byte[] file = readFile("src/test.txt");
-//		System.out.println("File in bytes:\n" + bytesToString(file));
-		
-//		System.out.println("File content:\n" + new String(file));
-		
-//		String decString = testRSA1(file,1024);
-//		System.out.println(decString);
-		
-		// bitLength in RSA beween 512 and 2048 
-		int bitLength = 2048;
-		testRSA2(file,bitLength);
-		
-		testElgamal(file);
+		//		System.out.println("File in bytes:\n" + bytesToString(file));
+
+		//		System.out.println("File content:\n" + new String(file));
+
+		//		String decString = testRSA1(file,1024);
+		//		System.out.println(decString);
+
+		// bitLength in RSA beween 512 and 2048
 		
 		
 		
 		
-		
-		
-		
-		
+		KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
+		Signature sig = Signature.getInstance("SHA1WithRSA");
+		long start = System.currentTimeMillis();
+		kpg.initialize(2048);
+		KeyPair keyPair = kpg.genKeyPair();
+		long elapsedTimeMillis = System.currentTimeMillis() - start;
+		float elapsedTimeSec = elapsedTimeMillis/1000F;
+		System.out.println("Key generation time for signature: " + elapsedTimeSec + " seconds");
+		byte[] signatureBytes = sign(file,keyPair,sig);
+
+
+		int bitLength = 1024;
+		byte[] decFile = testRSA3(file,bitLength);
+//		byte[] decFile = testElgamal(file);
+
+		verify(decFile,keyPair,sig,signatureBytes);
+
+
+
+
+
+
+
+
+
+
+
 	}
 	
+	public static byte[] sign(byte[] file,KeyPair keyPair,Signature sig) throws Exception{
 	
-	public static void testElgamal(byte[] file){
+		long start = System.currentTimeMillis();
+		sig.initSign(keyPair.getPrivate());
+		sig.update(file);
+		byte[] signatureBytes = sig.sign();
+		long elapsedTimeMillis = System.currentTimeMillis() - start;
+		float elapsedTimeSec = elapsedTimeMillis/1000F;
+		System.out.println("Siging time for signature: " + elapsedTimeSec + " seconds");
+		System.out.println("Singature:" + new BASE64Encoder().encode(signatureBytes));
+		
+		return signatureBytes;
+	}
+
+	
+	public static void verify(byte[] file,KeyPair keyPair, Signature sig,byte[] signatureBytes) throws Exception{
+		sig.initVerify(keyPair.getPublic());
+		sig.update(file);
+		System.out.println(sig.verify(signatureBytes));
+	}
+
+	public static byte[] testElgamal(byte[] file){
 		long start = System.currentTimeMillis();
 		Elgamal e1 = new Elgamal(new BigInteger("134544543232323232"),2048);
 		long elapsedTimeMillis = System.currentTimeMillis() - start;
 		float elapsedTimeSec = elapsedTimeMillis/1000F;
 		System.out.println("Key generation time: " + elapsedTimeSec + " seconds");
-		
+
 		start = System.currentTimeMillis();
 		BigInteger[] enc = e1.encrypt(file);
 		elapsedTimeMillis = System.currentTimeMillis() - start;
@@ -48,14 +95,14 @@ public class Run {
 		elapsedTimeMillis = System.currentTimeMillis() - start;
 		elapsedTimeSec = elapsedTimeMillis/1000F;
 		System.out.println("Decryption time: " + elapsedTimeSec+ " seconds");
-//		System.out.println("Alice decodes in bytes: " + bytesToString(de));
-//		System.out.println("Alice decodes: " + new String(de));
-		
-		
+		//		System.out.println("Alice decodes in bytes: " + bytesToString(de));
+		//		System.out.println("Alice decodes: " + new String(de));
+		return de;
+
 	}
-	
-	
-	public static void testRSA2(byte[] file,int bitLength){
+
+
+	public static byte[] testRSA2(byte[] file,int bitLength){
 		System.out.println("File size in bytes: " + file.length);
 		System.out.println("Primes size: " + bitLength);
 		long start = System.currentTimeMillis();
@@ -63,22 +110,58 @@ public class Run {
 		long elapsedTimeMillis = System.currentTimeMillis() - start;
 		float elapsedTimeSec = elapsedTimeMillis/1000F;
 		System.out.println("Key generation time: " + elapsedTimeSec + " seconds");
-		
-		
+
+
 		start = System.currentTimeMillis();
 		ArrayList<byte[]> encFile = RSAEncrypt(rsa,file);
 		elapsedTimeMillis = System.currentTimeMillis() - start;
 		elapsedTimeSec = elapsedTimeMillis/1000F;
 		System.out.println("Encryption time: " + elapsedTimeSec + " seconds");
-		
+
+
+
+
+
+
+
+
 		start = System.currentTimeMillis();
 		byte[] decFile = RSADecrypt(rsa,encFile);
 		elapsedTimeMillis = System.currentTimeMillis() - start;
 		elapsedTimeSec = elapsedTimeMillis/1000F;
 		System.out.println("Decryption time: " + elapsedTimeSec+ " seconds");
-//		System.out.println(new String(decFile));
+		System.out.println(new String(decFile));
+
+		return decFile;
 	}
-	
+
+	public static byte[] testRSA3(byte[] file,int bitLength){
+		System.out.println("File size in bytes: " + file.length);
+		System.out.println("Primes size: " + bitLength);
+		long start = System.currentTimeMillis();
+		RSA rsa = new RSA(bitLength);
+		long elapsedTimeMillis = System.currentTimeMillis() - start;
+		float elapsedTimeSec = elapsedTimeMillis/1000F;
+		System.out.println("Key generation time: " + elapsedTimeSec + " seconds");
+
+
+		start = System.currentTimeMillis();
+		byte[] encFile = RSAEncrypt2(rsa,file);
+		elapsedTimeMillis = System.currentTimeMillis() - start;
+		elapsedTimeSec = elapsedTimeMillis/1000F;
+		System.out.println("Encryption time: " + elapsedTimeSec + " seconds");
+
+
+		start = System.currentTimeMillis();
+		byte[] decFile = RSADecrypt2(rsa,encFile);
+		elapsedTimeMillis = System.currentTimeMillis() - start;
+		elapsedTimeSec = elapsedTimeMillis/1000F;
+		System.out.println("Decryption time: " + elapsedTimeSec+ " seconds");
+		System.out.println(new String(decFile));
+
+		return decFile;
+	}
+
 	public static ArrayList<byte[]> RSAEncrypt(RSA rsa,byte[] file){
 		ArrayList<byte[]> list = new ArrayList<byte[]>();
 		int fileSize = file.length;
@@ -100,20 +183,33 @@ public class Run {
 			index += 254;
 			fileSize -= 254;
 		}
-		
+
 		return list;
 	}
-	
+
+	public static byte[] RSAEncrypt2(RSA rsa,byte[] file){
+		byte[] encrypted = rsa.encrypt(file);
+		return encrypted;
+
+	}
+
+	public static byte[] RSADecrypt2(RSA rsa, byte[] list){
+
+		byte[] decrypted = rsa.decrypt(list);
+
+		return decrypted;
+	}
+
 	public static byte[] RSADecrypt(RSA rsa, ArrayList<byte[]> list){
 		String decString="";
 		for(byte[] block:list){
 			byte[] decrypted = rsa.decrypt(block);
 			decString+= new String(decrypted);
 		}
-		
+
 		return decString.getBytes();
 	}
-	
+
 	public static String testRSA1(byte[] file, int bitLength){
 		RSA rsa = new RSA(bitLength);
 		int fileSize = file.length;
@@ -129,26 +225,26 @@ public class Run {
 				block = new byte[fileSize];
 				System.arraycopy(file, index, block, 0, fileSize);
 			}
-//			System.out.println("Byte size: " + block.length);
-//			System.out.println("String in Bytes: " + bytesToString(block)); 
+			//			System.out.println("Byte size: " + block.length);
+			//			System.out.println("String in Bytes: " + bytesToString(block)); 
 
 			// encrypt 
 			byte[] encrypted = rsa.encrypt(block);  
-//			System.out.println("Encrypted String in Bytes: " + bytesToString(encrypted));
+			//			System.out.println("Encrypted String in Bytes: " + bytesToString(encrypted));
 
 			// decrypt 
 			byte[] decrypted = rsa.decrypt(encrypted);       
-//			System.out.println("Decrypted String in Bytes: " +  bytesToString(decrypted));
+			//			System.out.println("Decrypted String in Bytes: " +  bytesToString(decrypted));
 
-//			System.out.println("Decrypted String: " + new String(decrypted));
+			//			System.out.println("Decrypted String: " + new String(decrypted));
 			decString+= new String(decrypted);
 			index += 254;
 			fileSize -= 254;
 		}
 		return decString;
 	}
-	
-	
+
+
 	public static byte[] readFile(String fileName){
 		String fileString = "";
 		try{
@@ -162,14 +258,14 @@ public class Run {
 		catch(Exception e){}
 		return fileString.getBytes();
 	}
-	
-	
-	
+
+
+
 	private static String bytesToString(byte[] encrypted) { 
-        String test = ""; 
-        for (byte b : encrypted) { 
-            test += Byte.toString(b); 
-        } 
-        return test; 
-    }
+		String test = ""; 
+		for (byte b : encrypted) { 
+			test += Byte.toString(b); 
+		} 
+		return test; 
+	}
 }

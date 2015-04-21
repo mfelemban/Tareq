@@ -1,5 +1,6 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.math.BigInteger;
 import java.util.ArrayList;
 
 
@@ -15,8 +16,13 @@ public class Run {
 //		System.out.println(decString);
 		
 		// bitLength in RSA beween 512 and 2048 
-		int bitLength = 1024;
+		int bitLength = 2048;
 		testRSA2(file,bitLength);
+		
+		testElgamal(file);
+		
+		
+		
 		
 		
 		
@@ -25,21 +31,50 @@ public class Run {
 	}
 	
 	
+	public static void testElgamal(byte[] file){
+		long start = System.currentTimeMillis();
+		Elgamal e1 = new Elgamal(new BigInteger("134544543232323232"),2048);
+		long elapsedTimeMillis = System.currentTimeMillis() - start;
+		float elapsedTimeSec = elapsedTimeMillis/1000F;
+		System.out.println("Key generation time: " + elapsedTimeSec + " seconds");
+		
+		start = System.currentTimeMillis();
+		BigInteger[] enc = e1.encrypt(file);
+		elapsedTimeMillis = System.currentTimeMillis() - start;
+		elapsedTimeSec = elapsedTimeMillis/1000F;
+		System.out.println("Encryption time: " + elapsedTimeSec + " seconds");
+		start = System.currentTimeMillis();
+		byte[] de = e1.decrypt(enc);
+		elapsedTimeMillis = System.currentTimeMillis() - start;
+		elapsedTimeSec = elapsedTimeMillis/1000F;
+		System.out.println("Decryption time: " + elapsedTimeSec+ " seconds");
+//		System.out.println("Alice decodes in bytes: " + bytesToString(de));
+//		System.out.println("Alice decodes: " + new String(de));
+		
+		
+	}
+	
+	
 	public static void testRSA2(byte[] file,int bitLength){
 		System.out.println("File size in bytes: " + file.length);
 		System.out.println("Primes size: " + bitLength);
-		RSA rsa = new RSA(bitLength);
 		long start = System.currentTimeMillis();
-		ArrayList<byte[]> encFile = RSAEncrypt(rsa,file);
+		RSA rsa = new RSA(bitLength);
 		long elapsedTimeMillis = System.currentTimeMillis() - start;
 		float elapsedTimeSec = elapsedTimeMillis/1000F;
+		System.out.println("Key generation time: " + elapsedTimeSec + " seconds");
+		
+		
+		start = System.currentTimeMillis();
+		ArrayList<byte[]> encFile = RSAEncrypt(rsa,file);
+		elapsedTimeMillis = System.currentTimeMillis() - start;
+		elapsedTimeSec = elapsedTimeMillis/1000F;
 		System.out.println("Encryption time: " + elapsedTimeSec + " seconds");
 		
 		start = System.currentTimeMillis();
 		byte[] decFile = RSADecrypt(rsa,encFile);
 		elapsedTimeMillis = System.currentTimeMillis() - start;
 		elapsedTimeSec = elapsedTimeMillis/1000F;
-		
 		System.out.println("Decryption time: " + elapsedTimeSec+ " seconds");
 //		System.out.println(new String(decFile));
 	}

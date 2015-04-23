@@ -14,7 +14,7 @@ public class Elgamal
 		this.a = a;
 		this.sc = new SecureRandom();
 		this.p = BigInteger.probablePrime(size, sc);
-		this.g = new BigInteger("15");
+		this.g = new BigInteger("15"); 
 		this.h = g.modPow(a, p);
 //		System.out.println("p = " + p);
 //		System.out.println("g = " + g);

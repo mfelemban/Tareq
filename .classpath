@@ -3,5 +3,7 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="lib" path="/Users/mfelemban/Downloads/sun.misc.BASE64Decoder.jar"/>
+	<classpathentry kind="lib" path="/Users/mfelemban/Downloads/lcrypto-jdk16-143.jar"/>
+	<classpathentry kind="lib" path="/Users/mfelemban/Downloads/jce-jdk13-120.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

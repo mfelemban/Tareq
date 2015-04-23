@@ -29,19 +29,20 @@ public class Run {
 		
 		
 		KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
+		// You can use any type of signature ... check documentation
 		Signature sig = Signature.getInstance("SHA1WithRSA");
 		long start = System.currentTimeMillis();
 		kpg.initialize(2048);
 		KeyPair keyPair = kpg.genKeyPair();
 		long elapsedTimeMillis = System.currentTimeMillis() - start;
-		float elapsedTimeSec = elapsedTimeMillis/1000F;
-		System.out.println("Key generation time for signature: " + elapsedTimeSec + " seconds");
+		float elapsedTimeSec = elapsedTimeMillis;
+		System.out.println("Key generation time for signature: " + elapsedTimeSec + " milliseconds");
 		byte[] signatureBytes = sign(file,keyPair,sig);
 
 
-		int bitLength = 1024;
-		byte[] decFile = testRSA3(file,bitLength);
-//		byte[] decFile = testElgamal(file);
+		int bitLength = 2048;
+//		byte[] decFile = testRSA3(file,bitLength);
+		byte[] decFile = testElgamal(file,bitLength);
 
 		verify(decFile,keyPair,sig,signatureBytes);
 
@@ -64,8 +65,8 @@ public class Run {
 		sig.update(file);
 		byte[] signatureBytes = sig.sign();
 		long elapsedTimeMillis = System.currentTimeMillis() - start;
-		float elapsedTimeSec = elapsedTimeMillis/1000F;
-		System.out.println("Siging time for signature: " + elapsedTimeSec + " seconds");
+		float elapsedTimeSec = elapsedTimeMillis;
+		System.out.println("Siging time for signature: " + elapsedTimeSec + " milliseconds");
 		System.out.println("Singature:" + new BASE64Encoder().encode(signatureBytes));
 		
 		return signatureBytes;
@@ -78,23 +79,23 @@ public class Run {
 		System.out.println(sig.verify(signatureBytes));
 	}
 
-	public static byte[] testElgamal(byte[] file){
+	public static byte[] testElgamal(byte[] file,int size ){
 		long start = System.currentTimeMillis();
-		Elgamal e1 = new Elgamal(new BigInteger("134544543232323232"),2048);
+		Elgamal e1 = new Elgamal(new BigInteger("134544543232323232"),size);
 		long elapsedTimeMillis = System.currentTimeMillis() - start;
-		float elapsedTimeSec = elapsedTimeMillis/1000F;
-		System.out.println("Key generation time: " + elapsedTimeSec + " seconds");
+		float elapsedTimeSec = elapsedTimeMillis;
+		System.out.println("Key generation time: " + elapsedTimeSec + " milliseconds");
 
 		start = System.currentTimeMillis();
 		BigInteger[] enc = e1.encrypt(file);
 		elapsedTimeMillis = System.currentTimeMillis() - start;
-		elapsedTimeSec = elapsedTimeMillis/1000F;
-		System.out.println("Encryption time: " + elapsedTimeSec + " seconds");
+		elapsedTimeSec = elapsedTimeMillis;
+		System.out.println("Encryption time: " + elapsedTimeSec + " milliseconds");
 		start = System.currentTimeMillis();
 		byte[] de = e1.decrypt(enc);
 		elapsedTimeMillis = System.currentTimeMillis() - start;
-		elapsedTimeSec = elapsedTimeMillis/1000F;
-		System.out.println("Decryption time: " + elapsedTimeSec+ " seconds");
+		elapsedTimeSec = elapsedTimeMillis;
+		System.out.println("Decryption time: " + elapsedTimeSec+ " milliseconds");
 		//		System.out.println("Alice decodes in bytes: " + bytesToString(de));
 		//		System.out.println("Alice decodes: " + new String(de));
 		return de;
@@ -108,15 +109,15 @@ public class Run {
 		long start = System.currentTimeMillis();
 		RSA rsa = new RSA(bitLength);
 		long elapsedTimeMillis = System.currentTimeMillis() - start;
-		float elapsedTimeSec = elapsedTimeMillis/1000F;
-		System.out.println("Key generation time: " + elapsedTimeSec + " seconds");
+		float elapsedTimeSec = elapsedTimeMillis;
+		System.out.println("Key generation time: " + elapsedTimeSec + " milliseconds");
 
 
 		start = System.currentTimeMillis();
 		ArrayList<byte[]> encFile = RSAEncrypt(rsa,file);
 		elapsedTimeMillis = System.currentTimeMillis() - start;
-		elapsedTimeSec = elapsedTimeMillis/1000F;
-		System.out.println("Encryption time: " + elapsedTimeSec + " seconds");
+		elapsedTimeSec = elapsedTimeMillis;
+		System.out.println("Encryption time: " + elapsedTimeSec + " milliseconds");
 
 
 
@@ -128,8 +129,8 @@ public class Run {
 		start = System.currentTimeMillis();
 		byte[] decFile = RSADecrypt(rsa,encFile);
 		elapsedTimeMillis = System.currentTimeMillis() - start;
-		elapsedTimeSec = elapsedTimeMillis/1000F;
-		System.out.println("Decryption time: " + elapsedTimeSec+ " seconds");
+		elapsedTimeSec = elapsedTimeMillis;
+		System.out.println("Decryption time: " + elapsedTimeSec+ " milliseconds");
 		System.out.println(new String(decFile));
 
 		return decFile;
@@ -141,22 +142,22 @@ public class Run {
 		long start = System.currentTimeMillis();
 		RSA rsa = new RSA(bitLength);
 		long elapsedTimeMillis = System.currentTimeMillis() - start;
-		float elapsedTimeSec = elapsedTimeMillis/1000F;
-		System.out.println("Key generation time: " + elapsedTimeSec + " seconds");
+		float elapsedTimeSec = elapsedTimeMillis;
+		System.out.println("Key generation time: " + elapsedTimeSec + " milliseconds");
 
 
 		start = System.currentTimeMillis();
 		byte[] encFile = RSAEncrypt2(rsa,file);
 		elapsedTimeMillis = System.currentTimeMillis() - start;
-		elapsedTimeSec = elapsedTimeMillis/1000F;
-		System.out.println("Encryption time: " + elapsedTimeSec + " seconds");
+		elapsedTimeSec = elapsedTimeMillis;
+		System.out.println("Encryption time: " + elapsedTimeSec + " milliseconds");
 
 
 		start = System.currentTimeMillis();
 		byte[] decFile = RSADecrypt2(rsa,encFile);
 		elapsedTimeMillis = System.currentTimeMillis() - start;
-		elapsedTimeSec = elapsedTimeMillis/1000F;
-		System.out.println("Decryption time: " + elapsedTimeSec+ " seconds");
+		elapsedTimeSec = elapsedTimeMillis;
+		System.out.println("Decryption time: " + elapsedTimeSec+ " milliseconds");
 		System.out.println(new String(decFile));
 
 		return decFile;

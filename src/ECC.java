@@ -1,87 +1,77 @@
-// Arup Guha
-// 11/5/2012
-// Simple Example Illustrating Elliptic Curve Cryptography
-
-// Improvements to be made: The way this is set up, the user is required to know both the x and y coordinate of
-//                          the point they are encrypting. Perhaps this is required, but I don't how to
-//                          definitively generate large points on an EC, so my example just uses the textbook
-//                          curve E23(1,1). I'd like to find a way to verify and generate points on a large curve
-//						    so that I can test out my multiply function truly making use of the fast multiply.
-
-import java.math.*;
-import java.util.*;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
+import java.security.Provider;
+import java.security.PublicKey;
+import java.security.Security;
+import java.security.spec.ECGenParameterSpec;
+import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
 
 public class ECC {
+	public static void main(String args[]) {
+		try {
+			Provider p[] = Security.getProviders();
+			Provider p1 = Security.getProvider("SunEC");
+			System.out.println(p1.getName());
 
-	// Parts of one ECC system.
-	private EllipticCurve curve;
-	private Point generator;
-	private Point publicKey;
-	private BigInteger privateKey;
-
-	// We need a curve, a generator point (x,y) and a private key, nA, that will
-	// be used to generate the public key.
-	public ECC(EllipticCurve c, BigInteger x, BigInteger y, BigInteger nA) {
-		curve = c;
-		generator = new Point(curve, x, y);
-		privateKey = nA;
-		publicKey = generator.multiply(privateKey);
-	}
-
-	// Encryption.
-	public Point[] encrypt(Point plain) {
-
-		// First we must pick a random k, in range.
-		int bits = curve.getP().bitLength();
-		BigInteger k = new BigInteger(bits, new Random());
-		System.out.println("Picked "+k+" as k for encrypting.");
-
-		// Our output is an ordered pair, (k*generator, plain + k*publickey)
-		Point[] ans = new Point[2];
-		ans[0] = generator.multiply(k);
-		ans[1] = plain.add(publicKey.multiply(k));
-		return ans;
-	}
-
-	// Decryption - notice the similarity to El Gamal!!!
-	public Point decrypt(Point[] cipher) {
-
-		// This is what we subtract out.
-		Point sub = cipher[0].multiply(privateKey);
-
-		// Subtract out and return.
-		return cipher[1].subtract(sub);
-	}
-
-	public String toString() {
-
-		return "Gen: "+generator+"\n"+
-			   "pri: "+privateKey+"\n"+
-			   "pub: "+publicKey;
-	}
-
-	public static void main(String[] args) {
+			KeyPairGenerator kpg = KeyPairGenerator.getInstance("EC", "SunEC");
+			//kpg.initialize(128);
+			System.out.println(kpg.getAlgorithm());
+			//Cipher cipher = Cipher.getInstance("EC", "SunEC");
+			Cipher cipher = Cipher.getInstance("DES");
+			System.out.println("provider=" + cipher.getProvider());
+			
+			ECGenParameterSpec ecsp = new ECGenParameterSpec("sect163r2");   //sect163r2
+			kpg.initialize(256);   //ecsp
+			KeyPair kyp = kpg.genKeyPair();
 
 
-		// Just use the book's curve and test.
-		EllipticCurve myCurve = new EllipticCurve(new BigInteger("23"), new BigInteger("1"), new BigInteger("1"));
-		BigInteger x = new BigInteger("6");
-		BigInteger y = new BigInteger("19");
-		BigInteger nA = new BigInteger("10");
-		ECC Alice = new ECC(myCurve, x, y, nA);
+			//PublicKey pubKey = kyp
+			PublicKey pubKey = kyp.getPublic();
 
-		// I have hard-coded my plaintext point.
-		Point plain = new Point(myCurve, new BigInteger("3"), new BigInteger("13"));
-		System.out.println("encrypting "+plain);
+			//pubKey.toString()
+			int zz=pubKey.toString().length();
+			System.out.println("Size of key"+zz+"and key is "+pubKey.toString());
 
-		// Encrypt and print.
-		Point[] cipher = Alice.encrypt(plain);
-		System.out.println("cipher first part "+cipher[0]);
-		System.out.println("cipher second part "+cipher[1]);
+			PrivateKey privKey = kyp.getPrivate();
+			int pp=pubKey.toString().length();
+			System.out.println("Size of key"+pp+"and key is "+privKey.toString());
 
-		// Decrypt and verify.
-		Point recover = Alice.decrypt(cipher);
-		System.out.println("recovered "+recover);
+			//System.out.println(cipher.getProvider());
+			System.out.println("/n/n");
 
+			cipher.init(Cipher.ENCRYPT_MODE, pubKey);
+			//cipher.init(Cipher.ENCRYPT_MODE, pubKey);
+
+			String cleartextFile = "cleartext.txt";
+			String ciphertextFile = "cc.txt";
+
+			byte[] block = new byte[64];
+			FileInputStream fis = new FileInputStream(cleartextFile);
+			FileOutputStream fos = new FileOutputStream(ciphertextFile);
+			CipherOutputStream cos = new CipherOutputStream(fos, cipher);
+
+			int i;
+			while ((i = fis.read(block)) != -1) {
+				cos.write(block, 0, i);
+			}
+			cos.close();
+
+			// Decrypt
+			String cleartextAgainFile = "cc.txt";
+			cipher.init(Cipher.DECRYPT_MODE, privKey, ecsp);
+			fis = new FileInputStream(ciphertextFile);
+			CipherInputStream cis = new CipherInputStream(fis, cipher);
+			fos = new FileOutputStream(cleartextAgainFile);
+			while ((i = cis.read(block)) != -1) {
+				fos.write(block, 0, i);
+			}
+			fos.close();
+		} 
+		catch (Exception e) {            System.out.print(e); }
 	}
 }
